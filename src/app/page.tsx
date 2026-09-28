@@ -1,6 +1,8 @@
+import { AdBanner } from "@/components/AdBanner";
 import { EmptyState } from "@/components/EmptyState";
 import { SearchForm } from "@/components/SearchForm";
 import { TripCard } from "@/components/TripCard";
+import { ads } from "@/lib/ads";
 import { listCities, searchTrips } from "@/lib/data";
 import { tripSearchSchema } from "@/lib/validation";
 import Link from "next/link";
@@ -13,16 +15,9 @@ export default async function HomePage(props: PageProps<"/">) {
 
   return (
     <>
-      <section className="bg-gradient-to-br from-indigo-700 via-indigo-600 to-violet-600 pb-24 pt-14 text-white">
-        <div className="mx-auto max-w-6xl px-4">
-          <h1 className="max-w-2xl text-4xl font-bold tracking-tight sm:text-5xl">Your seat, your trip.</h1>
-          <p className="mt-3 max-w-xl text-indigo-100">
-            Search routes, pick exactly the seat you want, and you&apos;re good to go.
-          </p>
-        </div>
-      </section>
+      <AdBanner ads={ads} />
 
-      <div className="mx-auto -mt-16 max-w-6xl px-4">
+      <div className="relative z-10 mx-auto -mt-16 max-w-6xl px-4">
         <SearchForm key={JSON.stringify(filters)} cities={cities} initial={filters} />
       </div>
 

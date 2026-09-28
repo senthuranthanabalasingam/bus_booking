@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="480" viewBox="0 0 1600 480">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#be123c"/><stop offset="1" stop-color="#ea580c"/></linearGradient></defs>
+  <rect width="1600" height="480" fill="url(#g)"/>
+  <text x="800" y="200" text-anchor="middle" font-family="system-ui, sans-serif" font-size="64" font-weight="700" fill="#fff">Your ad here</text>
+  <text x="800" y="260" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" fill="#fff" fill-opacity="0.8">Advertisement placeholder – replace in public/ads</text>
+</svg>
