@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "@/lib/api-client";
+import { APP_UTC_OFFSET } from "@/lib/constants";
 import type { Bus } from "@/lib/types";
 import { useToast } from "./Toast";
 
@@ -50,8 +51,8 @@ export function BusForm() {
 export function TripForm({ buses }: { buses: Bus[] }) {
   const { busy, onSubmit } = useSubmit("/api/trips", "Trip added", (f) => {
     const data = Object.fromEntries(f) as Record<string, string>;
-    // datetime-local values are in the admin's local time; send them as absolute ISO timestamps.
-    const iso = (v: string) => (v ? new Date(v).toISOString() : "");
+    // datetime-local values have no zone; they're entered in Sri Lanka time.
+    const iso = (v: string) => (v ? `${v}:00${APP_UTC_OFFSET}` : "");
     return { ...data, departureAt: iso(data.departureAt), arrivalAt: iso(data.arrivalAt) };
   });
   return (
@@ -75,8 +76,8 @@ export function TripForm({ buses }: { buses: Bus[] }) {
       <div className="grid grid-cols-2 gap-3">
         <Field label="From" name="origin" placeholder="Colombo" />
         <Field label="To" name="destination" placeholder="Kandy" />
-        <Field label="Departure" name="departureAt" type="datetime-local" />
-        <Field label="Arrival" name="arrivalAt" type="datetime-local" />
+        <Field label="Departure (SL time)" name="departureAt" type="datetime-local" />
+        <Field label="Arrival (SL time)" name="arrivalAt" type="datetime-local" />
       </div>
       <Field label="Price (LKR)" name="price" type="number" min={0} step="1" placeholder="1200" />
       <button className="btn-primary w-full" disabled={busy || !buses.length}>

@@ -2,6 +2,7 @@ import "server-only";
 import { query, withTransaction } from "./db";
 import { HttpError, isUniqueViolation } from "./http";
 import type { SessionUser } from "./session";
+import { APP_TIME_ZONE } from "./constants";
 import type { Booking, Bus, TripDetail, TripSummary } from "./types";
 
 // Shared SELECT for trip listings: trip + bus + how many seats are still free.
@@ -20,11 +21,11 @@ export async function searchTrips({ from, to, date }: { from: string; to: string
       WHERE t.departure_at > now()
         AND ($1 = '' OR t.origin ILIKE $1 || '%')
         AND ($2 = '' OR t.destination ILIKE $2 || '%')
-        AND ($3::date IS NULL OR t.departure_at::date = $3::date)
+        AND ($3::date IS NULL OR (t.departure_at AT TIME ZONE $4)::date = $3::date)
       GROUP BY t.id, b.id
       ORDER BY t.departure_at
       LIMIT 100`,
-    [from, to, date ?? null],
+    [from, to, date ?? null, APP_TIME_ZONE],
   );
 }
 

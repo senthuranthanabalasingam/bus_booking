@@ -1,10 +1,4 @@
--- Bus seat booking schema. Safe to re-run: drops and recreates all tables.
-
-DROP TABLE IF EXISTS bookings;
-DROP TABLE IF EXISTS trips;
-DROP TABLE IF EXISTS buses;
-DROP TABLE IF EXISTS users;
-
+-- Initial schema: users, buses, trips, bookings.
 CREATE TABLE users (
   id            SERIAL PRIMARY KEY,
   name          TEXT NOT NULL,

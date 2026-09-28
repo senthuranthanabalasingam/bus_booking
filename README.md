@@ -20,21 +20,29 @@ cp .env.example .env.local   # then edit DATABASE_URL and JWT_SECRET
 
 # 3. Install, create tables, add demo data
 npm install
-npm run db:init    # drops and recreates all tables
-npm run db:seed    # demo users, buses and a week of trips
+npm run db:migrate # creates tables (applies db/migrations/*.sql)
+npm run db:seed    # demo users, buses and a week of trips (wipes existing data)
 
 # 4. Run
 npm run dev        # http://localhost:3000 (or the next free port)
+
+# Start over locally (refuses to run against a non-local database)
+npm run db:reset && npm run db:seed
 ```
+
+All times are Sri Lanka time (`Asia/Colombo`), whatever time zone the server runs in.
 
 Demo logins: `user@bus.test / user123`, admin `admin@bus.test / admin123`.
 
 ## Project structure
 
 ```
-db/schema.sql            Tables, constraints, indexes
-scripts/db-init.mjs      Applies schema.sql
+db/migrations/*.sql      Schema changes, applied in filename order
+scripts/db-migrate.mjs   Applies pending migrations (tracked in schema_migrations)
+scripts/db-reset.mjs     Local only: wipe DB and re-run migrations
 scripts/db-seed.mjs      Demo data
+scripts/smoke-test.mjs   End-to-end API test (npm run smoke)
+.github/workflows/ci.yml GitHub Actions CI
 src/proxy.ts             Redirects logged-out visitors away from /bookings and /admin
 src/lib/db.ts            pg Pool + withTransaction()
 src/lib/data.ts          All SQL queries (used by pages and API routes)
@@ -64,3 +72,29 @@ All responses are JSON; errors look like `{ "error": "message" }`.
 | GET | `/api/bookings` | user | Your bookings |
 | POST | `/api/bookings` | user | `{ tripId, seats: [1, 2] }` – all-or-nothing; `409` if any seat is taken |
 | DELETE | `/api/bookings/:id` | owner/admin | Cancel a booking (before departure) |
+
+## CI/CD
+
+**CI – GitHub Actions** (`.github/workflows/ci.yml`) runs on every push and pull request, against a fresh PostgreSQL 15:
+lint → type check → migrate (twice, to prove it's idempotent) → seed → build → start → `npm run smoke`.
+It needs no secrets and never touches the production database.
+
+**CD – Vercel Git integration.** Pushing to `main` deploys production; other branches and PRs get preview URLs.
+Vercel runs `npm run vercel-build`, which applies pending migrations **only for production deploys** and then builds.
+Migrations use `DATABASE_URL_UNPOOLED` (Neon's direct connection) when set, otherwise `DATABASE_URL`.
+
+### Changing the database schema
+
+Never edit an applied migration. Add a new file instead, e.g. `db/migrations/002_add_bus_type.sql`, run
+`npm run db:migrate` locally, then push. The next production deploy applies it.
+
+### One-time production setup
+
+1. Vercel → Project → Settings → Environment Variables: `DATABASE_URL` / `DATABASE_URL_UNPOOLED` (added by the Neon
+   integration) and `JWT_SECRET` (a new random value) for Production and Preview.
+2. After the first production deploy has created the tables, load the demo data once:
+   `DATABASE_URL="<Neon direct connection URL>" npm run db:seed`.
+   Seeding refuses to run against a non-local database that already has users.
+3. Recommended: GitHub → Settings → Branches → protect `main` and require the **CI** check.
+
+Preview deployments use the same database as production unless you enable Neon preview branches in the Vercel integration.

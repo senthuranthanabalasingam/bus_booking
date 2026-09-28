@@ -1,8 +1,15 @@
-// Fixed locale so server and browser render the same strings.
+import { APP_TIME_ZONE } from "./constants";
+
+// Fixed locale and time zone so server (UTC on Vercel) and browser render the same strings.
 const LOCALE = "en-GB";
 
-const time = new Intl.DateTimeFormat(LOCALE, { hour: "2-digit", minute: "2-digit" });
-const date = new Intl.DateTimeFormat(LOCALE, { weekday: "short", day: "numeric", month: "short" });
+const time = new Intl.DateTimeFormat(LOCALE, { hour: "2-digit", minute: "2-digit", timeZone: APP_TIME_ZONE });
+const date = new Intl.DateTimeFormat(LOCALE, {
+  weekday: "short",
+  day: "numeric",
+  month: "short",
+  timeZone: APP_TIME_ZONE,
+});
 const money = new Intl.NumberFormat("en-LK", { style: "currency", currency: "LKR", maximumFractionDigits: 0 });
 
 export const formatTime = (d: Date | string) => time.format(new Date(d));

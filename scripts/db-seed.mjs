@@ -28,6 +28,14 @@ const routes = [
 
 try {
   await client.connect();
+
+  // Seeding truncates every table, so never do it to a remote database that already has data.
+  const host = new URL(process.env.DATABASE_URL).hostname;
+  if (!["localhost", "127.0.0.1", "::1"].includes(host)) {
+    const { rows } = await client.query("SELECT count(*)::int AS n FROM users");
+    if (rows[0].n > 0) throw new Error(`${host} already has data; refusing to overwrite it.`);
+  }
+
   await client.query("BEGIN");
   await client.query("TRUNCATE bookings, trips, buses, users RESTART IDENTITY CASCADE");
 

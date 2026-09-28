@@ -8,7 +8,7 @@ types.setTypeParser(types.builtins.NUMERIC, (v) => parseFloat(v));
 const globalForDb = globalThis as unknown as { pgPool?: Pool };
 
 export const pool =
-  globalForDb.pgPool ?? new Pool({ connectionString: process.env.DATABASE_URL, max: 10 });
+  globalForDb.pgPool ?? new Pool({ connectionString: process.env.DATABASE_URL, max: 5, idleTimeoutMillis: 10_000 });
 
 if (process.env.NODE_ENV !== "production") globalForDb.pgPool = pool;
 
